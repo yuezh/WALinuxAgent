@@ -121,7 +121,7 @@ class install(_install):
         ('lnx-distro-version=', None, 'target Linux distribution version'),
         ('lnx-distro-fullname=', None, 'target Linux distribution full name'),
         ('register-service', None, 'register as startup service'),
-        ('skip-data-files', None, 'skip data files installation'),
+        ('install-data-files', None, 'skip data files installation'),
     ]
 
     def initialize_options(self):
@@ -131,16 +131,17 @@ class install(_install):
         self.lnx_distro_version = DISTRO_VERSION
         self.lnx_distro_fullname = DISTRO_FULL_NAME
         self.register_service = False
-        self.skip_data_files = False
+        self.install_data_files = False
         
     def finalize_options(self):
         _install.finalize_options(self)
-        if self.skip_data_files:
-            return
-
         if self.init_system is not None:
             print("WARNING: --init-system is deprecated,"
                   "use --lnx-distro* instead")
+
+        if not self.install_data_files:
+            return
+
         data_files = get_data_files(self.lnx_distro, self.lnx_distro_version,
                                     self.lnx_distro_fullname)
         self.distribution.data_files = data_files
