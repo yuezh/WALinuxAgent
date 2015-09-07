@@ -28,8 +28,8 @@ import time
 from azurelinuxagent.utils.restutil import httpclient
 import azurelinuxagent.logger as logger
 import azurelinuxagent.protocol.v1 as v1
-from tests.test_version import VersionInfoSample
-from tests.test_goalstate import goal_state_sample
+from tests.test_version import version_info_sample
+from tests.test_goalstate import goal_state_sample, goal_state_sample_no_ext
 from tests.test_hostingenv import hosting_env_sample
 from tests.test_sharedconfig import shared_config_sample
 from tests.test_certificates import certs_sample, transport_cert
@@ -38,7 +38,7 @@ from tests.test_extensionsconfig import ext_conf_sample, manifest_sample
 def mock_fetch_uri(url, headers=None, chk_proxy=False):
     content = None
     if "versions" in url:
-        content = VersionInfoSample
+        content = version_info_sample
     elif "goalstate" in url:
         content = goal_state_sample
     elif "hostingenvuri" in url:
@@ -53,6 +53,12 @@ def mock_fetch_uri(url, headers=None, chk_proxy=False):
         content = manifest_sample
     else:
         raise Exception("Bad url {0}".format(url))
+    return content
+
+def mock_fetch_uri_no_ext(url, headers=None, chk_proxy=False):
+    content = mock_fetch_uri(url, headers=headers, chk_proxy=chk_proxy)
+    if "goalstate" in url:
+        content = goal_state_sample_no_ext
     return content
 
 def mock_fetch_manifest(uris):
@@ -90,6 +96,40 @@ class MockResp(object):
     def read(self):
         return self.data
 
+
+class TestWireProtocol(unittest.TestCase):
+    @mock(v1, '_fetch_manifest', mock_fetch_manifest)
+    @mock(v1, '_fetch_cache', mock_fetch_cache)
+    @mock(v1, '_fetch_uri', mock_fetch_uri)
+    @mock(v1.fileutil, 'write_file', MockFunc())
+    def test_getters(self):
+        protocol = v1.WireProtocol("http://foo.bar")
+        protocol.initialize()
+        
+        vminfo = protocol.get_vminfo()
+        self.assertNotEquals(None, vminfo)
+        
+        certs = protocol.get_certs()
+        self.assertNotEquals(None, certs)
+
+        vmagent_manifests = protocol.get_vmagent_manifests()
+        self.assertNotEquals(None, vmagent_manifests)
+        self.assertNotEquals(0, len(vmagent_manifests.vmAgentManifests))
+        
+        vmagent_manifest = vmagent_manifests.vmAgentManifests[0]
+        vmagent_pkgs = protocol.get_vmagent_pkgs(vmagent_manifest)
+        self.assertNotEquals(None, vmagent_pkgs)
+        self.assertNotEquals(0, len(vmagent_pkgs.versions))
+
+        ext_handlers = protocol.get_ext_handlers()
+        self.assertNotEquals(None, ext_handlers)
+        self.assertNotEquals(0, len(ext_handlers.extHandlers))
+        
+        ext_handler = ext_handlers.extHandlers[0]
+        ext_handler_pkgs = protocol.get_ext_handler_pkgs(ext_handler)
+        self.assertNotEquals(None, ext_handler_pkgs)
+        self.assertNotEquals(0, len(ext_handler_pkgs.versions))
+
 class TestWireClint(unittest.TestCase):
 
     @mock(v1.restutil, 'http_get', MockFunc(retval=MockResp(data=data_with_bom)))
@@ -97,7 +137,7 @@ class TestWireClint(unittest.TestCase):
         v1._fetch_uri("http://foo.bar", None)
 
     @mock(v1, '_fetch_cache', mock_fetch_cache)
-    def test_get(self):
+    def test_getters(self):
         os.chdir('/tmp')
         client = v1.WireClient("foobar")
         goalState = client.get_goal_state()
@@ -116,7 +156,6 @@ class TestWireClint(unittest.TestCase):
         header = client.get_header_for_cert()
         self.assertNotEquals(None, header)
 
-    @mock(v1.WireClient, 'get_header_for_cert', MockFunc()) 
     @mock(v1, '_fetch_uri', mock_fetch_uri)
     @mock(v1.fileutil, 'write_file', MockFunc())
     def test_update_goal_state(self):
@@ -130,6 +169,13 @@ class TestWireClint(unittest.TestCase):
         self.assertNotEquals(None, shared_config)
         ext_conf = client.get_ext_conf()
         self.assertNotEquals(None, ext_conf)
+
+    @mock(v1.WireClient, 'get_header_for_cert', MockFunc()) 
+    @mock(v1, '_fetch_uri', mock_fetch_uri_no_ext)
+    @mock(v1.fileutil, 'write_file', MockFunc())
+    def test_update_goal_state(self):
+        client = v1.WireClient("foobar")
+        client.update_goal_state()
 
 class TestStatusBlob(unittest.TestCase):
     def testToJson(self):

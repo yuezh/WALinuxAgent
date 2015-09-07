@@ -54,6 +54,33 @@ goal_state_sample=u"""\
    </Container>
  </GoalState>
 """
+goal_state_sample_no_ext=u"""\
+<?xml version="1.0" encoding="utf-8"?>
+<GoalState xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="goalstate10.xsd">
+   <Version>2010-12-15</Version>
+   <Incarnation>1</Incarnation>
+   <Machine>
+     <ExpectedState>Started</ExpectedState>
+     <LBProbePorts>
+       <Port>16001</Port>
+     </LBProbePorts>
+   </Machine>
+   <Container>
+     <ContainerId>c6d5526c-5ac2-4200-b6e2-56f2b70c5ab2</ContainerId>
+     <RoleInstanceList>
+       <RoleInstance>
+         <InstanceId>MachineRole_IN_0</InstanceId>
+         <State>Started</State>
+         <Configuration>
+         <HostingEnvironmentConfig>http://hostingenvuri/</HostingEnvironmentConfig>
+         <SharedConfig>http://sharedconfiguri/</SharedConfig>
+         <FullConfig>http://fullconfiguri/</FullConfig>
+         </Configuration>
+       </RoleInstance>
+     </RoleInstanceList>
+   </Container>
+ </GoalState>
+"""
 
 class TestGoalState(unittest.TestCase):
     def test_goal_state(self):

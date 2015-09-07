@@ -102,6 +102,20 @@ class CertList(DataContract):
     def __init__(self):
         self.certificates = DataContractList(Cert)
 
+#TODO: confirm vmagent manifest schema
+class VMAgentManifestUri(DataContract):
+    def __init__(self, uri=None):
+        self.uri = uri
+
+class VMAgentManifest(DataContract):
+    def __init__(self, family=None):
+        self.family = family
+        self.versionsManifestUris = DataContractList(VMAgentManifestUri)
+
+class VMAgentManifestList(DataContract):
+    def __init__(self):
+        self.vmAgentManifests = DataContractList(VMAgentManifest)
+
 class Extension(DataContract):
     def __init__(self, name=None, sequenceNumber=None, publicSettings=None,
                  protectedSettings=None, certificateThumbprint=None):
@@ -137,7 +151,7 @@ class ExtHandlerPackageUri(DataContract):
         self.uri = uri
 
 class ExtHandlerPackage(DataContract):
-    def __init__(self, version = None):
+    def __init__(self, version=None):
         self.version = version
         self.uris = DataContractList(ExtHandlerPackageUri)
 
@@ -221,6 +235,12 @@ class Protocol(DataContract):
         raise NotImplementedError()
 
     def get_certs(self):
+        raise NotImplementedError()
+
+    def get_vmagent_manifests(self):
+        raise NotImplementedError()
+    
+    def get_vmagent_pkgs(self):
         raise NotImplementedError()
 
     def get_ext_handlers(self):
