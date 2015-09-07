@@ -128,6 +128,16 @@ EmptyPublicSettings=u"""\
 class TestExtensionsConfig(unittest.TestCase):
     def test_extensions_config(self):
         config = v1.ExtensionsConfig(ext_conf_sample)
+        
+        vmagent_manifests = config.vmagent_manifests
+        self.assertNotEquals(None, vmagent_manifests)
+        self.assertNotEquals(0, len(vmagent_manifests.vmAgentManifests))
+
+        vmagent_manifest = vmagent_manifests.vmAgentManifests[0]
+        self.assertNotEquals(None, vmagent_manifest.family)
+        self.assertNotEquals(None, vmagent_manifest.versionsManifestUris)
+        self.assertNotEquals(0, len(vmagent_manifest.versionsManifestUris))
+
         extensions = config.ext_handlers.extHandlers
         self.assertNotEquals(None, extensions)
         self.assertEquals(1, len(extensions))
@@ -144,7 +154,8 @@ class TestExtensionsConfig(unittest.TestCase):
         self.assertEquals("MIICWgYJK", settings.privateSettings)
         self.assertEquals(json.loads('{"foo":"bar"}'), 
                           settings.publicSettings)
-
+   
+    def test_extensions_manifest(self):
         man = v1.ExtensionManifest(manifest_sample)
         self.assertNotEquals(None, man.pkg_list)
         self.assertEquals(3, len(man.pkg_list.versions))

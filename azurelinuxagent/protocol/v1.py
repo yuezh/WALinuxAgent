@@ -77,6 +77,17 @@ class WireProtocol(Protocol):
         certificates = self.client.get_certs()
         return certificates.cert_list
 
+    def get_vmagent_manifests(self):
+        #Update goal state to get latest extensions config
+        self.client.update_goal_state()
+        ext_conf = self.client.get_ext_conf()
+        return ext_conf.vmagent_manifests
+
+    def get_vmagent_pkgs(self, vmagent_manifest):
+        goal_state = self.client.get_goal_state()
+        man = self.client.get_gafamily_manifest(vmagent_manifest, goal_state)
+        return man.pkg_list
+
     def get_ext_handlers(self):
         #Update goal state to get latest extensions config
         self.client.update_goal_state()
@@ -504,14 +515,6 @@ class WireClient(object):
                             self.get_header())
         fileutil.write_file(local_file, xml_text)
         self.ext_conf = ExtensionsConfig(xml_text)
-        for ext_handler in self.ext_conf.ext_handlers.extHandlers:
-            self.update_ext_handler_manifest(ext_handler, goal_state)
-
-    def update_ext_handler_manifest(self, ext_handler, goal_state):
-        local_file = MANIFEST_FILE_NAME.format(ext_handler.name,
-                                               goal_state.incarnation)
-        xml_text = _fetch_manifest(ext_handler.versionUris)
-        fileutil.write_file(local_file, xml_text)
 
     def update_goal_state(self, forced=False, max_retry=3):
         uri = GOAL_STATE_URI.format(self.endpoint)
@@ -570,7 +573,7 @@ class WireClient(object):
 
     def get_certs(self):
         if(self.certs is None):
-            xml_text = _fetch_cache(Certificates)
+            xml_text = _fetch_cache(CERTS_FILE_NAME)
             self.certs = Certificates(xml_text)
         if self.certs is None:
             return None
@@ -587,11 +590,20 @@ class WireClient(object):
                 self.ext_conf = ExtensionsConfig(xml_text)
         return self.ext_conf
 
-    def get_ext_manifest(self, extension, goal_state):
-        local_file = MANIFEST_FILE_NAME.format(extension.name,
-                                        goal_state.incarnation)
-        xml_text = _fetch_cache(local_file)
+    def get_ext_manifest(self, ext_handler, goal_state):
+        local_file = MANIFEST_FILE_NAME.format(ext_handler.name,
+                                               goal_state.incarnation)
+        xml_text = _fetch_manifest(ext_handler.versionUris)
+        fileutil.write_file(local_file, xml_text)
         return ExtensionManifest(xml_text)
+
+    def get_gafamily_manifest(self, vmagent_manifest, goal_state):
+        local_file = MANIFEST_FILE_NAME.format(vmagent_manifest.family,
+                                               goal_state.incarnation)
+        xml_text = _fetch_manifest(vmagent_manifest.versionsManifestUris)
+        fileutil.write_file(local_file, xml_text)
+        return ExtensionManifest(xml_text)
+        
 
     def check_wire_protocol_version(self):
         uri = VERSION_INFO_URI.format(self.endpoint)
@@ -944,6 +956,7 @@ class ExtensionsConfig(object):
     def __init__(self, xml_text):
         logger.verb("Load ExtensionsConfig.xml")
         self.ext_handlers = ExtHandlerList()
+        self.vmagent_manifests = VMAgentManifestList()
         self.status_upload_blob = None
         if xml_text is not None:
             self.parse(xml_text)
@@ -953,6 +966,21 @@ class ExtensionsConfig(object):
         Write configuration to file ExtensionsConfig.xml.
         """
         xml_doc = parse_doc(xml_text)
+        
+        ga_families_list = find(xml_doc, "GAFamilies")
+        ga_families = findall(ga_families_list, "GAFamily")
+        
+        for ga_family in ga_families:
+            family = findtext(ga_family, "Name")
+            uris_list = find(ga_family, "Uris")
+            uris = findall(uris_list, "Uri")
+            manifest = VMAgentManifest()
+            manifest.family = family
+            for uri in uris:
+                manifestUri = VMAgentManifestUri(uri=uri)
+                manifest.versionsManifestUris.append(manifestUri)
+            self.vmagent_manifests.vmAgentManifests.append(manifest)
+
         plugins_list = find(xml_doc, "Plugins")
         plugins = findall(plugins_list, "Plugin")
         plugin_settings_list = find(xml_doc, "PluginSettings")

@@ -42,6 +42,8 @@ class MetadataProtocol(Protocol):
                                             self.apiversion, "&$expand=*")
         self.cert_uri = BASE_URI.format(self.endpoint, "certificates",
                                         self.apiversion, "&$expand=*")
+        self.vmagent_uri = BASE_URI.format(self.endpoint, "vmAgentVersions",
+                                           self.apiversion, "&$expand=*")
         self.ext_uri = BASE_URI.format(self.endpoint, "extensionHandlers",
                                        self.apiversion, "&$expand=*")
         self.provision_status_uri = BASE_URI.format(self.endpoint,
@@ -100,6 +102,29 @@ class MetadataProtocol(Protocol):
     def get_certs(self):
         #TODO download and save certs
         return CertList()
+    
+    def get_vmagent_manifests(self):
+        manifests = VMAgentManifestList()
+        data = self._get_data(self.vmagent_uri)
+        set_properties("vmAgentManifests", manifests.vmAgentManifests, data)
+        return manifests
+
+    def get_vmagent_pkgs(self, vmagent_manifest):
+        #Agent package is the same with extension handler
+        vmagent_pkgs = ExtHandlerPackageList()
+        data = None
+        for manifest_uri in vmagent_manifest.versionsManifestUris:
+            try:
+                data = self._get_data(manifest_uri.uri)
+                break
+            except ProtocolError as e:
+                logger.warn("Failed to get vmagent versions: {0}", e)
+                logger.info("Retry getting vmagent versions")
+        if data is None:
+            raise ProtocolError(("Failed to get versions for vm agent: {0}"
+                                 "").format(vmagent_manifest.family))
+        set_properties("vmAgentVersions", vmagent_pkgs, data)
+        return vmagent_pkgs
 
     def get_ext_handlers(self):
         ext_list = ExtHandlerList()
@@ -117,6 +142,9 @@ class MetadataProtocol(Protocol):
             except ProtocolError as e:
                 logger.warn("Failed to get version uris: {0}", e)
                 logger.info("Retry getting version uris")
+        if data is None:
+            raise ProtocolError(("Failed to get versions for extension: {0}"
+                                 "").format(ext_handler.name))
         set_properties("extensionPackages", ext_handler_pkgs, data)
         return ext_handler_pkgs
 

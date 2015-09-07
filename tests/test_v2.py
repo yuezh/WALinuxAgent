@@ -53,20 +53,38 @@ SAMPLE_EXT_HANDLER=u"""[{
         }]
     },
     "versionUris":[{
-        "uri":"versionUri.foo"
+        "uri":"http://localhost/versionUri"
     }]
 }]"""
 
 SAMPLE_EXT_HANDLER_PKGS=u"""{
     "versions": [{
-        "version":"foo",
+        "version":"1.0",
         "uris":[{
-            "uri":"bar"
+            "uri":"http://localhost/bar"
         },{
-            "uri":"baz"
+            "uri":"http://localhost/baz"
         }]
     }]
 }"""
+
+SAMPLE_VMAGENT_MANIFEST = u"""[{
+    "family": "AzureLinuxAgent",
+    "versionsManifestUris":[{
+        "uri" : "http://localhost/versionsManifest"
+    }]
+}]
+"""
+
+SAMPLE_VMAGENT_VERIONS = u"""{
+    "versions":[{
+        "version": "2.1",
+        "uris": [{
+            "uri": "http://localhost/vmAgentVersionUris"
+        }]
+    }]
+}
+"""
 
 def mock_get_data(self, url, headers=None):
     data = u"{}"
@@ -78,6 +96,10 @@ def mock_get_data(self, url, headers=None):
         data = SAMPLE_EXT_HANDLER
     elif url.count(u"versionUri") > 0:
         data = SAMPLE_EXT_HANDLER_PKGS
+    elif url.count(u"vmAgentVersions") > 0:
+        data = SAMPLE_VMAGENT_MANIFEST
+    elif url.count(u"versionsManifest") > 0:
+        data = SAMPLE_VMAGENT_VERIONS
     return json.loads(data)
 
 class TestMetadataProtocol(unittest.TestCase):
@@ -90,6 +112,14 @@ class TestMetadataProtocol(unittest.TestCase):
         self.assertNotEquals(None, vminfo.subscriptionId)
 
         protocol.get_certs()
+
+        manifests = protocol.get_vmagent_manifests()
+        self.assertNotEquals(None, manifests)
+        self.assertNotEquals(0, len(manifests.vmAgentManifests))
+
+        agent_pkgs = protocol.get_vmagent_pkgs(manifests.vmAgentManifests[0])
+        self.assertNotEquals(None, agent_pkgs)
+        self.assertNotEquals(0, len(agent_pkgs.versions))
 
         ext_handers = protocol.get_ext_handlers()
         self.assertNotEquals(None, ext_handers)

@@ -27,7 +27,7 @@ import json
 import azurelinuxagent.protocol.v1 as v1
 from azurelinuxagent.future import text
 
-VersionInfoSample=u"""\
+version_info_sample = u"""\
 <?xml version="1.0" encoding="utf-8"?>
 <Versions>
   <Preferred>
@@ -42,7 +42,7 @@ VersionInfoSample=u"""\
 
 class TestVersionInfo(unittest.TestCase):
     def test_version_info(self):
-        config = v1.VersionInfo(VersionInfoSample)
+        config = v1.VersionInfo(version_info_sample)
         self.assertEquals("2012-11-30", config.get_preferred())
         self.assertNotEquals(None, config.get_supported())
         self.assertEquals(2, len(config.get_supported()))
