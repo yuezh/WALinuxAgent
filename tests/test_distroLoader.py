@@ -29,7 +29,8 @@ class TestDistroLoader(unittest.TestCase):
     def test_loader(self):
         self.assertNotEquals(osutil.DefaultOSUtil, type(OSUTIL))
         self.assertNotEquals(None, HANDLERS.init_handler)
-        self.assertNotEquals(None, HANDLERS.main_handler)
+        self.assertNotEquals(None, HANDLERS.update_handler)
+        self.assertNotEquals(None, HANDLERS.worker_handler)
         self.assertNotEquals(None, HANDLERS.scvmm_handler)
         self.assertNotEquals(None, HANDLERS.env_handler)
         self.assertNotEquals(None, HANDLERS.provision_handler)

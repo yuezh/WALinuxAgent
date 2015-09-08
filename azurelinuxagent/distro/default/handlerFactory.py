@@ -17,8 +17,10 @@
 # Requires Python 2.4+ and Openssl 1.0+
 #
 from azurelinuxagent.distro.default.init import InitHandler
-from azurelinuxagent.distro.default.run import MainHandler
+from azurelinuxagent.distro.default.worker import WorkerHandler
+from azurelinuxagent.distro.default.update import UpdateHandler
 from azurelinuxagent.distro.default.scvmm import ScvmmHandler
+from azurelinuxagent.distro.default.dhcp import DhcpHandler
 from azurelinuxagent.distro.default.env import EnvHandler
 from azurelinuxagent.distro.default.provision import ProvisionHandler
 from azurelinuxagent.distro.default.resourceDisk import ResourceDiskHandler
@@ -28,7 +30,8 @@ from azurelinuxagent.distro.default.deprovision import DeprovisionHandler
 class DefaultHandlerFactory(object):
     def __init__(self):
         self.init_handler = InitHandler(self)
-        self.main_handler = MainHandler(self)
+        self.worker_handler = WorkerHandler(self)
+        self.update_handler = UpdateHandler(self)
         self.scvmm_handler = ScvmmHandler(self)
         self.env_handler = EnvHandler(self)
         self.provision_handler = ProvisionHandler(self)

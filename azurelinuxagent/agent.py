@@ -32,25 +32,6 @@ from azurelinuxagent.metadata import AGENT_NAME, AGENT_LONG_VERSION, \
 from azurelinuxagent.utils.osutil import OSUTIL
 from azurelinuxagent.handler import HANDLERS
 
-
-def init(verbose):
-    """
-    Initialize agent running environment.
-    """
-    HANDLERS.init_handler.init(verbose)
-
-def run():
-    """
-    Run agent daemon
-    """
-    HANDLERS.main_handler.run()
-
-def deprovision(force=False, deluser=False):
-    """
-    Run deprovision command
-    """
-    HANDLERS.deprovision_handler.deprovision(force=force, deluser=deluser)
-
 def parse_args(sys_args):
     """
     Parse command line arguments
@@ -65,6 +46,8 @@ def parse_args(sys_args):
             cmd = "deprovision"
         elif re.match("^([-/]*)daemon", a):
             cmd = "daemon"
+        elif re.match("^([-/]*)worker", a):
+            cmd = "worker"
         elif re.match("^([-/]*)start", a):
             cmd = "start"
         elif re.match("^([-/]*)register-service", a):
@@ -81,6 +64,30 @@ def parse_args(sys_args):
             cmd = "help"
             break
     return cmd, force, verbose
+
+def init(verbose):
+    """
+    Initialize agent running environment
+    """
+    HANDLERS.init_handler.init(verbose)
+
+def daemon():
+    """
+    Run agent self update handler
+    """
+    HANDLERS.update_handler.run()
+
+def worker():
+    """
+    Run agent worker
+    """
+    HANDLERS.worker_handler.run()
+
+def deprovision(force=False, deluser=False):
+    """
+    Run deprovision command
+    """
+    HANDLERS.deprovision_handler.deprovision(force=force, deluser=deluser)
 
 def version():
     """
@@ -127,15 +134,17 @@ def main():
         version()
     elif command == "help":
         usage()
+    elif command == "start":
+        start()
     else:
         init(verbose)
         if command == "deprovision+user":
             deprovision(force, deluser=True)
         elif command == "deprovision":
             deprovision(force, deluser=False)
-        elif command == "start":
-            start()
+        elif command == "worker":
+            worker()
         elif command == "register-service":
             register_service()
         elif command == "daemon":
-            run()
+            daemon()

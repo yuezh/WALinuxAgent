@@ -22,8 +22,11 @@ import azurelinuxagent.conf as conf
 import azurelinuxagent.logger as logger
 from azurelinuxagent.utils.osutil import OSUTIL
 import azurelinuxagent.utils.fileutil as fileutil
+import azurelinuxagent.event as event
 
-
+"""
+Initialize agent running environment.
+"""
 class InitHandler(object):
     def __init__(self, handlers):
         self.handlers = handlers
@@ -49,4 +52,5 @@ class InitHandler(object):
         fileutil.mkdir(OSUTIL.get_lib_dir(), mode=0o700)
         os.chdir(OSUTIL.get_lib_dir())
 
-
+        #Enable unhandled err dump
+        event.enable_unhandled_err_dump("Azure Linux Agent")

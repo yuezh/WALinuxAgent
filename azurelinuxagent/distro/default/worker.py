@@ -33,10 +33,21 @@ from azurelinuxagent.protocol.factory import PROT_FACTORY
 from azurelinuxagent.utils.osutil import OSUTIL
 import azurelinuxagent.utils.fileutil as fileutil
 
-
-class MainHandler(object):
+"""
+Handle provisioning and extension handlers
+"""
+class WorkerHandler(object):
     def __init__(self, handlers):
         self.handlers = handlers
+
+    def probe_env(self):
+
+        if conf.get_switch("DetectScvmmEnv", False):
+            if self.handlers.scvmm_handler.detect_scvmm_env():
+                return
+
+        PROT_FACTORY.wait_for_network()
+        PROT_FACTORY.detect_protocol()
 
     def run(self):
         logger.info("{0} Version:{1}", AGENT_LONG_NAME, AGENT_VERSION)
@@ -44,18 +55,8 @@ class MainHandler(object):
         logger.info("Python: {0}.{1}.{2}", PY_VERSION_MAJOR, PY_VERSION_MINOR,
                     PY_VERSION_MICRO)
 
-        event.enable_unhandled_err_dump(AGENT_LONG_NAME)
         fileutil.write_file(OSUTIL.get_agent_pid_file_path(), text(os.getpid()))
-
-        if conf.get_switch("DetectScvmmEnv", False):
-            if self.handlers.scvmm_handler.detect_scvmm_env():
-                return
-        
-        PROT_FACTORY.wait_for_network()
-
         self.handlers.provision_handler.process()
-        
-        PROT_FACTORY.detect_protocol()
 
         if conf.get_switch("ResourceDisk.Format", False):
             self.handlers.resource_disk_handler.start_activate_resource_disk()
