@@ -32,18 +32,14 @@ import azurelinuxagent.protocol as prot
 from azurelinuxagent.utils.osutil import OSUTIL
 import azurelinuxagent.utils.fileutil as fileutil
 
-
-class MainHandler(object):
+"""
+Handle provisioning and extension handlers
+"""
+class WorkerHandler(object):
     def __init__(self, handlers):
         self.handlers = handlers
 
-    def run(self):
-        logger.info("{0} Version:{1}", AGENT_LONG_NAME, AGENT_VERSION)
-        logger.info("OS: {0} {1}", DISTRO_NAME, DISTRO_VERSION)
-        logger.info("Python: {0}.{1}.{2}", PY_VERSION_MAJOR, PY_VERSION_MINOR,
-                    PY_VERSION_MICRO)
-
-        event.enable_unhandled_err_dump("Azure Linux Agent")
+    def probe_env(self):
         fileutil.write_file(OSUTIL.get_agent_pid_file_path(), text(os.getpid()))
 
         if conf.get_switch("DetectScvmmEnv", False):
@@ -54,7 +50,11 @@ class MainHandler(object):
 
         prot.detect_default_protocol()
 
-        event.EventMonitor().start()
+    def run(self):
+        logger.info("{0} Version:{1}", AGENT_LONG_NAME, AGENT_VERSION)
+        logger.info("OS: {0} {1}", DISTRO_NAME, DISTRO_VERSION)
+        logger.info("Python: {0}.{1}.{2}", PY_VERSION_MAJOR, PY_VERSION_MINOR,
+                    PY_VERSION_MICRO)
 
         self.handlers.provision_handler.process()
 
@@ -62,6 +62,8 @@ class MainHandler(object):
             self.handlers.resource_disk_handler.start_activate_resource_disk()
 
         self.handlers.env_handler.start()
+
+        event.EventMonitor().start()
 
         protocol = prot.FACTORY.get_default_protocol()
         while True:
