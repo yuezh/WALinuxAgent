@@ -27,7 +27,7 @@ import json
 import azurelinuxagent.utils.fileutil as fileutil
 import azurelinuxagent.agent as agent
 
-class TestAgent(unittest.TestCase):
+class TestAgent(tools.AgentTestCase):
     def test_parse_args(self):
         cmd, force, verbose = agent.parse_args(["deprovision+user", 
                                                "-force", 

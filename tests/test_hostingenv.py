@@ -52,7 +52,7 @@ hosting_env_sample=u"""
  </HostingEnvironmentConfig>
 """
 
-class TestHostingEvn(unittest.TestCase):
+class TestHostingEvn(tools.AgentTestCase):
     def test_hosting_env(self):
         hosting_env = v1.HostingEnv(hosting_env_sample)
         self.assertNotEquals(None, hosting_env)

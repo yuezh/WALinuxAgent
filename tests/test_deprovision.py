@@ -19,7 +19,7 @@
 # http://msdn.microsoft.com/en-us/library/cc227259%28PROT.13%29.aspx
 
 import tests.env
-from tests.tools import *
+from tests.tools import AgentTestCase, mock
 import unittest
 import azurelinuxagent.distro.default.deprovision as deprovision_handler
 
@@ -34,7 +34,7 @@ def MockSetup(self, deluser):
     ]
     return warnings, actions
 
-class TestDeprovisionHandler(unittest.TestCase):
+class TestDeprovisionHandler(AgentTestCase):
     def test_setup(self):
         handler = deprovision_handler.DeprovisionHandler(None)
         warnings, actions = handler.setup(False)

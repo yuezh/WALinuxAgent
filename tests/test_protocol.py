@@ -19,7 +19,7 @@
 # http://msdn.microsoft.com/en-us/library/cc227259%28PROT.13%29.aspx
 
 import tests.env
-from tests.tools import *
+from tests.tools import AgentTestCase
 import uuid
 import unittest
 import os
@@ -44,7 +44,7 @@ extensionDataStr = """
 }
 """
 
-class TestProtocolContract(unittest.TestCase):
+class TestProtocolContract(AgentTestCase):
     def test_get_properties(self):
         data = get_properties(VMInfo())
         data = get_properties(Cert())

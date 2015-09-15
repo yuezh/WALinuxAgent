@@ -19,13 +19,14 @@
 # http://msdn.microsoft.com/en-us/library/cc227259%28PROT.13%29.aspx
 
 import tests.env
-from  .tools import *
+import tests.tools as tools
 import uuid
 import unittest
 import os
 import json
 import azurelinuxagent.utils.fileutil as fileutil
 import azurelinuxagent.protocol.v1 as v1
+from azurelinuxagent.utils.osutil import OSUTIL
 
 certs_sample=u"""\
 <?xml version="1.0" encoding="utf-8"?>
@@ -167,22 +168,19 @@ vbtwtsknAHtTbotXJwfaBZv2RGgGRr3DzNo6ll2Aez0lNblZFXq132h7+y5iLvar
 def MockGetOpensslCmd():
     return 'openssl'
 
-class TestCertificates(unittest.TestCase):
+class TestCertificates(tools.AgentTestCase):
     
     def test_certificates(self):
-        crt1 = '/tmp/33B0ABCE4673538650971C10F7D7397E71561F35.crt'
-        crt2 = '/tmp/4037FBF5F1F3014F99B5D6C7799E9B20E6871CB3.crt'
-        prv2 = '/tmp/4037FBF5F1F3014F99B5D6C7799E9B20E6871CB3.prv'
-        os.chdir('/tmp')
-        if os.path.isfile(crt1):
-            os.remove(crt1)
-        if os.path.isfile(crt2):
-            os.remove(crt2)
-        if os.path.isfile(prv2):
-            os.remove(prv2)
-        fileutil.write_file(os.path.join('/tmp', "TransportCert.pem"), 
+        crt1 = os.path.join(OSUTIL.get_lib_dir(), 
+                            '33B0ABCE4673538650971C10F7D7397E71561F35.crt')
+        crt2 = os.path.join(self.tmp_dir, 
+                           "4037FBF5F1F3014F99B5D6C7799E9B20E6871CB3.crt")
+        prv2 = os.path.join(self.tmp_dir, 
+                           "4037FBF5F1F3014F99B5D6C7799E9B20E6871CB3.prv")
+
+        fileutil.write_file(os.path.join(self.tmp_dir, "TransportCert.pem"), 
                             transport_cert)
-        fileutil.write_file(os.path.join('/tmp', "TransportPrivate.pem"), 
+        fileutil.write_file(os.path.join(self.tmp_dir, "TransportPrivate.pem"), 
                             transport_private)
         config = v1.Certificates(certs_sample)
         self.assertNotEquals(None, config)

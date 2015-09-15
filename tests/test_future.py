@@ -19,7 +19,7 @@
 # http://msdn.microsoft.com/en-us/library/cc227259%28PROT.13%29.aspx
 
 import tests.env
-from tests.tools import *
+from tests.tools import AgentTestCase, MockFunc
 import uuid
 import unittest
 import os
@@ -31,6 +31,8 @@ class TestFuture(unittest.TestCase):
     def test_future_pkgs(self):
         future.httpclient
         future.urlparse
+        future.bytebuffer
+        future.read_input
         future.text(b"asdf", encoding="utf-8")
 
 if __name__ == '__main__':

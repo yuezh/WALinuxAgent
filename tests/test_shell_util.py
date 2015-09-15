@@ -28,7 +28,7 @@ import azurelinuxagent.utils.shellutil as shellutil
 import test
 from azurelinuxagent.future import text
 
-class TestrunCmd(unittest.TestCase):
+class TestrunCmd(tools.AgentTestCase):
     def test_run_get_output(self):
         output = shellutil.run_get_output(u"ls /")
         self.assertNotEquals(None, output)

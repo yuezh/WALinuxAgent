@@ -18,8 +18,9 @@
 # http://msdn.microsoft.com/en-us/library/cc227282%28PROT.10%29.aspx
 # http://msdn.microsoft.com/en-us/library/cc227259%28PROT.13%29.aspx
 
+import os
 import tests.env
-from tests.tools import *
+from tests.tools import AgentTestCase, MockFunc, mock
 import unittest
 import azurelinuxagent.distro.default.resourceDisk as rdh
 import azurelinuxagent.logger as logger
@@ -38,26 +39,29 @@ Number  Start   End     Size    Type     File system  Flags
  2      2097kB  29.4GB  29.4GB  primary  ext4         boot
 """
 
-class TestResourceDisk(unittest.TestCase):
+class TestResourceDisk(AgentTestCase):
 
     @mock(rdh.OSUTIL, 'device_for_ide_port', MockFunc(retval='foo'))
     @mock(rdh.shellutil, 'run_get_output', MockFunc(retval=(0, gpt_output_sample)))
     @mock(rdh.shellutil, 'run', MockFunc(retval=0))
     def test_mountGPT(self):
-        handler = rdh.ResourceDiskHandler(None)
-        handler.mount_resource_disk('/tmp/foo', 'ext4')
+        mount_point = os.path.join(self.tmp_dir, "resource")
+        handler = rdh.ResourceDiskHandler()
+        handler.mount_resource_disk(mount_point, 'ext4')
 
     @mock(rdh.OSUTIL, 'device_for_ide_port', MockFunc(retval='foo'))
     @mock(rdh.shellutil, 'run_get_output', MockFunc(retval=(0, "")))
     @mock(rdh.shellutil, 'run', MockFunc(retval=0))
     def test_mountMBR(self):
-        handler = rdh.ResourceDiskHandler(None)
-        handler.mount_resource_disk('/tmp/foo', 'ext4')
+        mount_point = os.path.join(self.tmp_dir, "resource")
+        handler = rdh.ResourceDiskHandler()
+        handler.mount_resource_disk(mount_point, 'ext4')
 
     @mock(rdh.shellutil, 'run', MockFunc(retval=0))
     def test_createSwapSpace(self):
-        handler = rdh.ResourceDiskHandler(None)
-        handler.create_swap_space('/tmp/foo', 512)
+        mount_point = os.path.join(self.tmp_dir, "resource")
+        handler = rdh.ResourceDiskHandler()
+        handler.create_swap_space(mount_point, 512)
 
 if __name__ == '__main__':
     unittest.main()

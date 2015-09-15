@@ -71,7 +71,7 @@ shared_config_sample=u"""
  </SharedConfig>
 """
 
-class TestSharedConfig(unittest.TestCase):
+class TestSharedConfig(tools.AgentTestCase):
     def test_sharedconfig(self):
         shared_conf = v1.SharedConfig(shared_config_sample)
    

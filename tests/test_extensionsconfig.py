@@ -125,7 +125,7 @@ EmptyPublicSettings=u"""\
 </Extensions>
 """
 
-class TestExtensionsConfig(unittest.TestCase):
+class TestExtensionsConfig(tools.AgentTestCase):
     def test_extensions_config(self):
         config = v1.ExtensionsConfig(ext_conf_sample)
         

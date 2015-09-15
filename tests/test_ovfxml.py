@@ -59,7 +59,7 @@ ExtensionsConfigSample="""\
  </Environment>
 """
 
-class TestOvf(unittest.TestCase):
+class TestOvf(tools.AgentTestCase):
     def test_ovf(self):
         config = ovfenv.OvfEnv(ExtensionsConfigSample)
         self.assertEquals("HostName", config.hostname)

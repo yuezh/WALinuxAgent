@@ -82,7 +82,7 @@ goal_state_sample_no_ext=u"""\
  </GoalState>
 """
 
-class TestGoalState(unittest.TestCase):
+class TestGoalState(tools.AgentTestCase):
     def test_goal_state(self):
         goal_state = v1.GoalState(goal_state_sample)
         self.assertEquals('1', goal_state.incarnation)

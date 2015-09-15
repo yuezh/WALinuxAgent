@@ -19,13 +19,13 @@
 # http://msdn.microsoft.com/en-us/library/cc227259%28PROT.13%29.aspx
 
 import tests.env
-from tests.tools import *
+from tests.tools import AgentTestCase
 import unittest
 from azurelinuxagent.metadata import AGENT_NAME, AGENT_VERSION, \
                                      DISTRO_NAME, DISTRO_VERSION, DISTRO_CODE_NAME, \
                                      DISTRO_FULL_NAME
 
-class TestOSInfo(unittest.TestCase):
+class TestOSInfo(AgentTestCase):
     def test_curr_os_info(self):
         self.assertNotEquals(None, DISTRO_NAME)
         self.assertNotEquals(None, DISTRO_VERSION)

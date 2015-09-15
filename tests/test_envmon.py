@@ -19,7 +19,7 @@
 # http://msdn.microsoft.com/en-us/library/cc227259%28PROT.13%29.aspx
 
 import tests.env
-from tests.tools import *
+from tests.tools import AgentTestCase, MockFunc, mock
 import unittest
 import time
 import azurelinuxagent.protocol.dhcp as dhcp
@@ -40,7 +40,7 @@ def mock_get_dhcp_pid():
 def mock_dhcp_pid_change():
     return text(time.time())
 
-class TestEnvMonitor(unittest.TestCase):
+class TestEnvMonitor(AgentTestCase):
 
     @mock(OSUTIL, 'get_dhcp_pid', mock_get_dhcp_pid)
     @mock(dhcp.DHCPCLIENT, 'get_dhcp_resp', mock_get_dhcp_resp)
