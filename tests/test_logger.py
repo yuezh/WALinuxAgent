@@ -22,11 +22,12 @@
 import tests.env
 import tests.tools as tools
 import uuid
+import os
 import unittest
 import azurelinuxagent.logger as logger
 from azurelinuxagent.future import text
 
-class TestLogger(unittest.TestCase):
+class TestLogger(tools.AgentTestCase):
 
     def test_no_appender(self):
         #The logger won't throw exception even if no appender.
@@ -51,47 +52,47 @@ class TestLogger(unittest.TestCase):
         _logger.info(u"啊哈this is a utf-8 {0}", u'呵呵')
 
     def test_file_appender(self):
+        log_file = os.path.join(self.tmp_dir, 'testlog')
         _logger = logger.Logger()
         _logger.add_appender(logger.AppenderType.FILE,
-                                  logger.LogLevel.INFO,
-                                  '/tmp/testlog')
+                             logger.LogLevel.INFO, log_file)
 
         msg = text(uuid.uuid4())
         _logger.info("Test logger: {0}", msg)
-        self.assertTrue(tools.simple_file_grep('/tmp/testlog', msg))
+        self.assertTrue(tools.simple_file_grep(log_file, msg))
 
         msg = text(uuid.uuid4())
         _logger.verb("Verbose should not be logged: {0}", msg)
-        self.assertFalse(tools.simple_file_grep('/tmp/testlog', msg))
+        self.assertFalse(tools.simple_file_grep(log_file, msg))
 
 
-    def test_concole_appender(self):
+    def test_console_appender(self):
+        console = os.path.join(self.tmp_dir, 'console')
         _logger = logger.Logger()
         _logger.add_appender(logger.AppenderType.CONSOLE,
-                                  logger.LogLevel.VERBOSE,
-                                  '/tmp/testlog')
+                             logger.LogLevel.VERBOSE, console)
 
         msg = text(uuid.uuid4())
         _logger.info("Test logger: {0}", msg)
-        self.assertTrue(tools.simple_file_grep('/tmp/testlog', msg))
+        self.assertTrue(tools.simple_file_grep(console, msg))
 
         msg = text(uuid.uuid4())
         _logger.verb("Test logger: {0}", msg)
-        self.assertFalse(tools.simple_file_grep('/tmp/testlog', msg))
+        self.assertFalse(tools.simple_file_grep(console, msg))
 
 
     def test_log_to_non_exists_dev(self):
+        non_exists = os.path.join(self.tmp_dir, "non_exists")
         _logger = logger.Logger()
         _logger.add_appender(logger.AppenderType.CONSOLE,
-                                  logger.LogLevel.INFO,
-                                  '/dev/nonexists')
+                             logger.LogLevel.INFO, non_exists)
         _logger.info("something")
 
     def test_log_to_non_exists_file(self):
+        non_exists = os.path.join(self.tmp_dir, "non_exists")
         _logger = logger.Logger()
         _logger.add_appender(logger.AppenderType.FILE,
-                                  logger.LogLevel.INFO,
-                                  '/tmp/nonexists')
+                             logger.LogLevel.INFO, non_exists)
         _logger.info("something")
 
 

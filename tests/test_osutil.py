@@ -19,7 +19,7 @@
 # http://msdn.microsoft.com/en-us/library/cc227259%28PROT.13%29.aspx
 
 import tests.env as env
-from tests.tools import *
+from tests.tools import AgentTestCase, MockFunc, mock, simple_file_grep
 import uuid
 import unittest
 import os
@@ -31,7 +31,7 @@ import azurelinuxagent.conf as conf
 from azurelinuxagent.utils.osutil import OSUTIL, OSUtilError
 import test
 
-class TestOSUtil(unittest.TestCase):
+class TestOSUtil(AgentTestCase):
     def test_current_distro(self):
         self.assertNotEquals(None, OSUTIL)
 
@@ -45,7 +45,7 @@ none on /proc/sys/fs/binfmt_misc type binfmt_misc (rw)
 /dev/sdb1 on /mnt/resource type ext4 (rw)
 """
 
-class TestCurrOS(unittest.TestCase):
+class TestCurrOS(AgentTestCase):
 #class TestCurrOS(object):
     def test_get_paths(self):
         self.assertNotEquals(None, OSUTIL.get_home())
@@ -74,18 +74,16 @@ class TestCurrOS(unittest.TestCase):
                           fileutil.write_file.args[1])
  
     def test_cert_operation(self):
-        if os.path.isfile('/tmp/test.prv'):
-            os.remove('/tmp/test.prv')
+        prv_file = os.path.join(self.tmp_dir, "test.prv")
+        crt_file = os.path.join(self.tmp_dir, "test.crt")
         shutil.copyfile(os.path.join(env.test_root, 'test.prv'), 
-                        '/tmp/test.prv')
-        if os.path.isfile('/tmp/test.crt'):
-            os.remove('/tmp/test.crt')
+                        prv_file)
         shutil.copyfile(os.path.join(env.test_root, 'test.crt'), 
-                        '/tmp/test.crt')
-        pub1 = OSUTIL.get_pubkey_from_prv('/tmp/test.prv')
-        pub2 = OSUTIL.get_pubkey_from_crt('/tmp/test.crt')
+                        crt_file)
+        pub1 = OSUTIL.get_pubkey_from_prv(prv_file)
+        pub2 = OSUTIL.get_pubkey_from_crt(crt_file)
         self.assertEquals(pub1, pub2)
-        thumbprint = OSUTIL.get_thumbprint_from_crt('/tmp/test.crt')
+        thumbprint = OSUTIL.get_thumbprint_from_crt(crt_file)
         self.assertEquals('33B0ABCE4673538650971C10F7D7397E71561F35', thumbprint)
 
     def test_selinux(self):
@@ -97,10 +95,10 @@ class TestCurrOS(unittest.TestCase):
             self.assertEquals(False, OSUTIL.is_selinux_enforcing())
             OSUTIL.set_selinux_enforce(1)
             self.assertEquals(True, OSUTIL.is_selinux_enforcing())
-        if os.path.isfile('/tmp/abc'):
-            os.remove('/tmp/abc')
-        fileutil.write_file('/tmp/abc', '')
-        OSUTIL.set_selinux_context('/tmp/abc','unconfined_u:object_r:ssh_home_t:s')
+        test_file = os.path.join(self.tmp_dir, "test")
+        fileutil.write_file(test_file, '')
+        OSUTIL.set_selinux_context(test_file, 
+                                   'unconfined_u:object_r:ssh_home_t:s')
         OSUTIL.set_selinux_enforce(1 if isrunning else 0)
 
     @mock(shellutil, 'run_get_output', MockFunc(retval=[0, '']))
@@ -123,38 +121,43 @@ class TestCurrOS(unittest.TestCase):
     @mock(OSUTIL, 'get_pubkey_from_prv', MockFunc(retval=''))
     @mock(fileutil, 'chowner', MockFunc())
     def test_deploy_key(self):
-        if os.path.isdir('/tmp/home'):
-            shutil.rmtree('/tmp/home')
-        fileutil.write_file('/tmp/foo.prv', '')
+        OSUTIL.get_home.retval = self.tmp_dir
+        fileutil.write_file(os.path.join(self.tmp_dir, 'foo.prv'), '')
         OSUTIL.deploy_ssh_keypair("foo", ('$HOME/.ssh/id_rsa', 'foo'))
         OSUTIL.deploy_ssh_pubkey("foo", ('$HOME/.ssh/authorized_keys', None, 
                                          'ssh-rsa asdf'))
         OSUTIL.deploy_ssh_pubkey("foo", ('$HOME/.ssh/authorized_keys', 'foo', 
                                          'ssh-rsa asdf'))
+        self.assertTrue(os.path.isfile(os.path.join(self.tmp_dir, 
+                                                    '.ssh/id_rsa')))
+        self.assertTrue(os.path.isfile(os.path.join(self.tmp_dir, 
+                                                    '.ssh/id_rsa.pub')))
+        self.assertTrue(os.path.isfile(os.path.join(self.tmp_dir, 
+                                                    '.ssh/id_rsa.pub')))
+        self.assertTrue(os.path.isfile(os.path.join(self.tmp_dir, 
+                                                     '.ssh/authorized_keys')))
+
         self.assertRaises(OSUtilError, OSUTIL.deploy_ssh_pubkey, "foo", 
                          ('$HOME/.ssh/authorized_keys', 'foo','hehe-rsa asdf'))
-        self.assertTrue(os.path.isfile('/tmp/home/.ssh/id_rsa'))
-        self.assertTrue(os.path.isfile('/tmp/home/.ssh/id_rsa.pub'))
-        self.assertTrue(os.path.isfile('/tmp/home/.ssh/authorized_keys'))
 
     @mock(shellutil, 'run_get_output', MockFunc(retval=[0, '']))
     @mock(OSUTIL, 'get_sshd_conf_file_path', MockFunc(retval='/tmp/sshd_config'))
     def test_ssh_operation(self):
-        shellutil.run_get_output.retval=[0, 
-                                       '2048 f1:fe:14:66:9d:46:9a:60:8b:8c:'
-                                       '80:43:39:1c:20:9e  root@api (RSA)']
-        sshd_conf = OSUTIL.get_sshd_conf_file_path()
-        self.assertEquals('/tmp/sshd_config', sshd_conf)
-        if os.path.isfile(sshd_conf):
-            os.remove(sshd_conf)
-        shutil.copyfile(os.path.join(env.test_root, 'sshd_config'), sshd_conf)
+        shellutil.run_get_output.retval=[0, '2048 f1:fe:14:66:9d:46:9a:60:8b:8c:'
+                                         '80:43:39:1c:20:9e  root@api (RSA)']
+
+        sshd_config_file = os.path.join(self.tmp_dir, "sshd_config")
+        OSUTIL.get_sshd_conf_file_path.retval = sshd_config_file
+
+        shutil.copyfile(os.path.join(env.test_root, 'sshd_config'), 
+                        sshd_config_file)
         OSUTIL.set_ssh_client_alive_interval()
         OSUTIL.conf_sshd(True)
-        self.assertTrue(simple_file_grep(sshd_conf, 
+        self.assertTrue(simple_file_grep(sshd_config_file, 
                                          'PasswordAuthentication no'))
-        self.assertTrue(simple_file_grep(sshd_conf, 
+        self.assertTrue(simple_file_grep(sshd_config_file, 
                                          'ChallengeResponseAuthentication no'))
-        self.assertTrue(simple_file_grep(sshd_conf, 
+        self.assertTrue(simple_file_grep(sshd_config_file, 
                                          'ClientAliveInterval 180'))
 
     @mock(shellutil, 'run_get_output', MockFunc(retval=[0, '']))
@@ -167,8 +170,8 @@ class TestCurrOS(unittest.TestCase):
         self.assertNotEquals(None, mount_point)
 
     def test_getdvd(self):
-        fileutil.write_file("/tmp/sr0", '')
-        OSUTIL.get_dvd_device(dev_dir='/tmp')
+        fileutil.write_file(os.path.join(self.tmp_dir, "sr0"), '')
+        OSUTIL.get_dvd_device(dev_dir=self.tmp_dir)
 
 if __name__ == '__main__':
     unittest.main()

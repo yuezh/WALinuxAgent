@@ -19,7 +19,7 @@
 # http://msdn.microsoft.com/en-us/library/cc227259%28PROT.13%29.aspx
 
 import tests.env
-from tests.tools import *
+from tests.tools import AgentTestCase
 import unittest
 from azurelinuxagent.distro.redhat.osutil import RedhatOSUtil
 
@@ -39,7 +39,7 @@ expected_ssh_rsa_pubkey="""\
 ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA2wo22vf1N8NWE+5lLfitT7uzkfwqdw0IAoHZ0l2BtP0ajy6f835HCR3w3zLWw5ut7Xvyo26x1OMOzjo5lqtMh8iyQwfHtWf6Cekxfkf+6Pca99bNuDgwRopOTOyoVgwDzJB0+slpn/sJjeGbhxJlToT8tNPLrBmnnpaMZLMIANcPQtTRCQcV/ycv+/omKXFB+zULYkN8v22o5mysoCuQfzXiJP3Mlnf+V2XMl1WAJylhOJif04K8j+G8oF5ECBIQiph4ZLQS1yTYlozPXU8k8vB6A5+UiOGxBnOQYnp42cS5d4qSQ8LORCRGXrCj4DCP+lvkUDLUHx2WN+1ivZkOfQ==
 """
 
-class TestRedhat(unittest.TestCase):
+class TestRedhat(AgentTestCase):
     def test_RsaPublicKeyToSshRsa(self):
         OSUtil = RedhatOSUtil()
         ssh_rsa_pubkey = OSUtil.asn1_to_ssh_rsa(test_pubkey)

@@ -19,7 +19,7 @@
 # http://msdn.microsoft.com/en-us/library/cc227259%28PROT.13%29.aspx
 
 import tests.env
-from tests.tools import *
+from tests.tools import AgentTestCase, MockFunc, mock
 import uuid
 import unittest
 import os
@@ -36,7 +36,7 @@ class MockResponse(object):
     def getheaders(self):
         pass
 
-class TestHttpOperations(unittest.TestCase):
+class TestHttpOperations(AgentTestCase):
 
     def test_parse_url(self):
         host, port, secure, rel_uri = restutil._parse_url("http://abc.def/ghi#hash?jkl=mn")

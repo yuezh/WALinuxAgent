@@ -19,7 +19,7 @@
 # http://msdn.microsoft.com/en-us/library/cc227259%28PROT.13%29.aspx
 
 import tests.env
-from tests.tools import *
+from tests.tools import AgentTestCase
 import uuid
 import unittest
 import os
@@ -27,7 +27,7 @@ from azurelinuxagent.future import text
 import azurelinuxagent.utils.textutil as textutil
 from azurelinuxagent.utils.textutil import Version
 
-class TestTextUtil(unittest.TestCase):
+class TestTextUtil(AgentTestCase):
     def test_get_password_hash(self):
         password_hash = textutil.gen_password_hash("asdf", 6, 10)
         self.assertNotEquals(None, password_hash)

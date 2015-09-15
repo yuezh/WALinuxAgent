@@ -19,7 +19,7 @@
 # http://msdn.microsoft.com/en-us/library/cc227259%28PROT.13%29.aspx
 
 import tests.env
-from .tools import *
+from tests.tools import AgentTestCase, MockFunc, mock
 import uuid
 import unittest
 import os
@@ -33,14 +33,12 @@ class MockProtocol(object):
         return prot.VMInfo(subscriptionId='foo', vmName='bar')
     def report_event(self, data): pass
 
-class TestEvent(unittest.TestCase):
+class TestEvent(AgentTestCase):
     def test_save(self):
-        if not os.path.exists("/tmp/events"):
-            os.mkdir("/tmp/events")
+        event_dir = os.path.join(self.tmp_dir, "events")
         evt.add_event("Test", "Test", True)
-        eventsFile = os.listdir("/tmp/events")
+        eventsFile = os.listdir(event_dir)
         self.assertNotEquals(0, len(eventsFile))
-        shutil.rmtree("/tmp/events")
 
     @mock(evt.prot.FACTORY, 'get_default_protocol', 
           MockFunc(retval=MockProtocol()))

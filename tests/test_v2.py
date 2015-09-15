@@ -19,7 +19,7 @@
 # http://msdn.microsoft.com/en-us/library/cc227259%28PROT.13%29.aspx
 
 import tests.env
-from tests.tools import *
+from tests.tools import AgentTestCase, mock, MockFunc
 import unittest
 import json
 import azurelinuxagent.protocol.v2 as v2
@@ -102,7 +102,7 @@ def mock_get_data(self, url, headers=None):
         data = SAMPLE_VMAGENT_VERIONS
     return json.loads(data)
 
-class TestMetadataProtocol(unittest.TestCase):
+class TestMetadataProtocol(AgentTestCase):
     @mock(v2.MetadataProtocol, '_get_data', mock_get_data)
     def test_getters(self):
         protocol = v2.MetadataProtocol()

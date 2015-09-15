@@ -40,7 +40,7 @@ version_info_sample = u"""\
 </Versions>
 """
 
-class TestVersionInfo(unittest.TestCase):
+class TestVersionInfo(tools.AgentTestCase):
     def test_version_info(self):
         config = v1.VersionInfo(version_info_sample)
         self.assertEquals("2012-11-30", config.get_preferred())

@@ -21,6 +21,9 @@
 
 import os
 import sys
+import unittest
+import shutil
+import tempfile
 from functools import wraps
 from azurelinuxagent.utils.osutil import OSUTIL
 
@@ -59,7 +62,14 @@ class MockFunc(object):
         self.kwargs = kwargs
         return self.retval
 
+class AgentTestCase(unittest.TestCase):
+    def setUp(self):
+        self.tmp_dir = tempfile.mkdtemp(prefix=self.__class__.__name__)
+        OSUTIL.get_lib_dir = MockFunc(retval=self.tmp_dir)
+        log_dir = os.path.join(self.tmp_dir, "log")
+        OSUTIL.get_ext_log_dir = MockFunc(retval=log_dir)
 
-#Mock osutil so that the test of other part will be os unrelated
-OSUTIL.get_lib_dir = MockFunc(retval='/tmp')
-OSUTIL.get_ext_log_dir = MockFunc(retval='/tmp/log')
+    def tearDown(self):
+        if self.tmp_dir is not None:
+            shutil.rmtree(self.tmp_dir)
+

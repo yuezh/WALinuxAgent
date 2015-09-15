@@ -19,14 +19,14 @@
 # http://msdn.microsoft.com/en-us/library/cc227259%28PROT.13%29.aspx
 
 import tests.env
-from tests.tools import *
+from tests.tools import AgentTestCase, MockFunc
 import uuid
 import unittest
 import os
 import azurelinuxagent.protocol as protocol
 import azurelinuxagent.protocol.protocolFactory as protocolFactory
 
-class TestWireProtocolEndpoint(unittest.TestCase):
+class TestWireProtocolEndpoint(AgentTestCase):
     def test_get_available_protocols(self):
         mockGetV1 = MockFunc(retval="Mock protocol")
         protocols = protocolFactory.get_available_protocols([mockGetV1])

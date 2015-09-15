@@ -27,36 +27,36 @@ import sys
 from azurelinuxagent.future import text
 import azurelinuxagent.utils.fileutil as fileutil
 
-class TestFileOperations(unittest.TestCase):
+class TestFileOperations(tools.AgentTestCase):
     def test_read_write_file(self):
-        test_file='/tmp/test_file'
+        test_file=os.path.join(self.tmp_dir, 'test_file')
         content = text(uuid.uuid4())
         fileutil.write_file(test_file, content)
         self.assertTrue(tools.simple_file_grep(test_file, content))
 
-        content_read = fileutil.read_file('/tmp/test_file')
+        content_read = fileutil.read_file(test_file)
         self.assertEquals(content, content_read)
         os.remove(test_file)
     
     def test_rw_utf8_file(self):
-        test_file='/tmp/test_file3'
-        content = "\u6211"
+        test_file=os.path.join(self.tmp_dir, 'test_file')
+        content = u"\u6211"
         fileutil.write_file(test_file, content, encoding="utf-8")
         self.assertTrue(tools.simple_file_grep(test_file, content))
 
-        content_read = fileutil.read_file('/tmp/test_file3')
+        content_read = fileutil.read_file(test_file)
         self.assertEquals(content, content_read)
         os.remove(test_file)
 
     def test_remove_bom(self):
-        test_file= '/tmp/test_file4'
+        test_file=os.path.join(self.tmp_dir, 'test_file')
         data = b'\xef\xbb\xbfhehe'
         fileutil.write_file(test_file, data, asbin=True)
         data = fileutil.read_file(test_file, remove_bom=True)
         self.assertNotEquals(0xbb, ord(data[0]))
    
     def test_append_file(self):
-        test_file='/tmp/test_file2'
+        test_file=os.path.join(self.tmp_dir, 'test_file')
         content = text(uuid.uuid4())
         fileutil.append_file(test_file, content)
         self.assertTrue(tools.simple_file_grep(test_file, content))

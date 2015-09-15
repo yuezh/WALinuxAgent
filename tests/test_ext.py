@@ -19,7 +19,7 @@
 # http://msdn.microsoft.com/en-us/library/cc227259%28PROT.13%29.aspx
 
 import tests.env
-from tests.tools import *
+from tests.tools import AgentTestCase, MockFunc, mock
 import uuid
 import unittest
 import os
@@ -92,7 +92,7 @@ def mock_download(self):
     fileutil.write_file(self.get_manifest_file(), json.dumps(manifest_sample_str))
 
 #logger.LoggerInit("/dev/null", "/dev/stdout")
-class TestExtensions(unittest.TestCase):
+class TestExtensions(AgentTestCase):
 
     def test_load_ext(self):
         libDir = OSUTIL.get_lib_dir()
@@ -108,28 +108,40 @@ class TestExtensions(unittest.TestCase):
     def test_getters(self):
         test_ext = ext.ExtHandlerInstance(ext_sample, pkg_list_sample, 
                                           ext_sample.properties.version, False)
-        self.assertEqual("/tmp/TestExt-2.0", test_ext.get_base_dir())
-        self.assertEqual("/tmp/TestExt-2.0/status", test_ext.get_status_dir())
-        self.assertEqual("/tmp/TestExt-2.0/status/0.status", 
+        
+        self.assertEqual(os.path.join(self.tmp_dir, "TestExt-2.0"), 
+                         test_ext.get_base_dir())
+        self.assertEqual(os.path.join(self.tmp_dir, "TestExt-2.0/status"), 
+                         test_ext.get_status_dir())
+        self.assertEqual(os.path.join(self.tmp_dir, 
+                         "TestExt-2.0/status/0.status"), 
                          test_ext.get_status_file())
-        self.assertEqual("/tmp/handler_state/TestExt-2.0/0.state", 
+        self.assertEqual(os.path.join(self.tmp_dir, 
+                         "handler_state/TestExt-2.0/0.state"),
                          test_ext.get_handler_state_file())
-        self.assertEqual("/tmp/handler_state/TestExt-2.0/0.message", 
+        self.assertEqual(os.path.join(self.tmp_dir, 
+                         "handler_state/TestExt-2.0/0.message"),
                          test_ext.get_handler_state_message_file())
-        self.assertEqual("/tmp/TestExt-2.0/config", test_ext.get_conf_dir())
-        self.assertEqual("/tmp/TestExt-2.0/config/0.settings", 
+        self.assertEqual(os.path.join(self.tmp_dir, "TestExt-2.0/config"), 
+                         test_ext.get_conf_dir())
+        self.assertEqual(os.path.join(self.tmp_dir, 
+                         "TestExt-2.0/config/0.settings"),
                          test_ext.get_settings_file())
-        self.assertEqual("/tmp/TestExt-2.0/heartbeat.log", 
+        self.assertEqual(os.path.join(self.tmp_dir, "TestExt-2.0/heartbeat.log"), 
                          test_ext.get_heartbeat_file())
-        self.assertEqual("/tmp/TestExt-2.0/HandlerManifest.json", 
+        self.assertEqual(os.path.join(self.tmp_dir, 
+                         "TestExt-2.0/HandlerManifest.json"),
                          test_ext.get_manifest_file())
-        self.assertEqual("/tmp/TestExt-2.0/HandlerEnvironment.json", 
+        self.assertEqual(os.path.join(self.tmp_dir, 
+                         "TestExt-2.0/HandlerEnvironment.json"),
                          test_ext.get_env_file())
-        self.assertEqual("/tmp/log/TestExt/2.0", test_ext.get_log_dir())
+        self.assertEqual(os.path.join(self.tmp_dir, "log/TestExt/2.0"), 
+                         test_ext.get_log_dir())
 
         test_ext = ext.ExtHandlerInstance(ext_sample, pkg_list_sample, 
                                           "2.1", False)
-        self.assertEqual("/tmp/TestExt-2.1", test_ext.get_base_dir())
+        self.assertEqual(os.path.join(self.tmp_dir, "TestExt-2.1"), 
+                         test_ext.get_base_dir())
         self.assertEqual("2.1", test_ext.get_target_version())
    
     @mock(ext.ExtHandlerInstance, 'load_manifest', mock_load_manifest)

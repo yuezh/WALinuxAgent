@@ -880,14 +880,20 @@ class Certificates(object):
                "\n"
                "{2}").format(P7M_FILE_NAME, P7M_FILE_NAME, data)
 
-        fileutil.write_file(os.path.join(self.lib_dir, P7M_FILE_NAME), p7m)
+        p7m_file = os.path.join(self.lib_dir, P7M_FILE_NAME)
+        transport_cert_file = os.path.join(self.lib_dir, 
+                                           TRANSPORT_CERT_FILE_NAME)
+        transport_prv_file = os.path.join(self.lib_dir, 
+                                          TRANSPORT_PRV_FILE_NAME)
+        pem_file = os.path.join(self.lib_dir, PEM_FILE_NAME)
+
+        fileutil.write_file(os.path.join(self.lib_dir, p7m_file), p7m)
         #decrypt certificates
         cmd = ("{0} cms -decrypt -in {1} -inkey {2} -recip {3}"
                "| {4} pkcs12 -nodes -password pass: -out {5}"
-               "").format(self.openssl_cmd, P7M_FILE_NAME, 
-                          TRANSPORT_PRV_FILE_NAME, TRANSPORT_CERT_FILE_NAME, 
-                          self.openssl_cmd, PEM_FILE_NAME)
-        shellutil.run(cmd)
+               "").format(self.openssl_cmd, p7m_file, transport_prv_file, 
+                          transport_cert_file, self.openssl_cmd, pem_file)
+        ret = shellutil.run(cmd)
 
         #The parsing process use public key to match prv and crt.
         buf = []
@@ -897,7 +903,7 @@ class Certificates(object):
         thumbprints = {}
         index = 0
         v1_cert_list = []
-        with open(PEM_FILE_NAME) as pem:
+        with open(pem_file) as pem:
             for line in pem.readlines():
                 buf.append(line)
                 if re.match(r'[-]+BEGIN.*KEY[-]+', line):

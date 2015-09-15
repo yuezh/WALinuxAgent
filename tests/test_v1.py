@@ -20,7 +20,7 @@
 
 import tests.env
 import tests.tools as tools
-from tests.tools import *
+from tests.tools import AgentTestCase, MockFunc, mock
 import uuid
 import unittest
 import os
@@ -97,7 +97,7 @@ class MockResp(object):
         return self.data
 
 
-class TestWireProtocol(unittest.TestCase):
+class TestWireProtocol(AgentTestCase):
     @mock(v1, '_fetch_manifest', mock_fetch_manifest)
     @mock(v1, '_fetch_cache', mock_fetch_cache)
     @mock(v1, '_fetch_uri', mock_fetch_uri)
@@ -130,7 +130,7 @@ class TestWireProtocol(unittest.TestCase):
         self.assertNotEquals(None, ext_handler_pkgs)
         self.assertNotEquals(0, len(ext_handler_pkgs.versions))
 
-class TestWireClint(unittest.TestCase):
+class TestWireClint(AgentTestCase):
 
     @mock(v1.restutil, 'http_get', MockFunc(retval=MockResp(data=data_with_bom)))
     def test_fetch_uri_with_bom(self):
@@ -177,7 +177,7 @@ class TestWireClint(unittest.TestCase):
         client = v1.WireClient("foobar")
         client.update_goal_state()
 
-class TestStatusBlob(unittest.TestCase):
+class TestStatusBlob(AgentTestCase):
     def testToJson(self):
         vm_status = v1.VMStatus()
         status_blob = v1.StatusBlob()
@@ -193,7 +193,7 @@ class TestStatusBlob(unittest.TestCase):
         data = 'a' * 100
         status_blob.put_page_blob("http://foo.bar", data)
 
-class TestConvert(unittest.TestCase):
+class TestConvert(AgentTestCase):
     def test_status(self):
         vm_status = v1.VMStatus() 
         handler_status = v1.ExtHandlerStatus(name="foo")

@@ -19,7 +19,7 @@
 # http://msdn.microsoft.com/en-us/library/cc227259%28PROT.13%29.aspx
 
 import tests.env
-from tests.tools import *
+from tests.tools import AgentTestCase
 import uuid
 import unittest
 import os
@@ -32,7 +32,7 @@ class SampleDataContract(DataContract):
         self.foo = None
         self.bar = DataContractList(int)
 
-class TestDataContract(unittest.TestCase):
+class TestDataContract(AgentTestCase):
     def test_get_properties(self):
         obj = SampleDataContract()
         obj.foo = "foo"

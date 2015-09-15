@@ -26,7 +26,7 @@ import sys
 import uuid
 import unittest
 
-class TestImportWAAgent(unittest.TestCase):
+class TestImportWAAgent(tools.AgentTestCase):
     def test_import_waagent(self):
         agent_path = os.path.join(tools.parent, 'bin/waagent')
         if sys.version_info[0] == 2:

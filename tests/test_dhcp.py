@@ -19,7 +19,7 @@
 # http://msdn.microsoft.com/en-us/library/cc227259%28PROT.13%29.aspx
 
 import tests.env as env
-from tests.tools import *
+from tests.tools import AgentTestCase, MockFunc, mock
 import uuid
 import unittest
 import os
@@ -36,7 +36,7 @@ mock_gen_trans_id = MockFunc('gen_trans_id', "\xC6\xAA\xD1\x5D")
 mock_get_mac_addr = MockFunc('get_mac_addr', "\x00\x15\x5D\x38\xAA\x38")
 mock_send_dhcp_failed = MockFunc(retval=None)
 
-class TestdhcpHandler(unittest.TestCase):
+class TestDhcpHandler(AgentTestCase):
  
     def test_build_dhcp_req(self):
         req = dhcp_handler.build_dhcp_request(mock_get_mac_addr())

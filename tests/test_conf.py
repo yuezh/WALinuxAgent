@@ -38,7 +38,7 @@ foo.bar.int=300
 
 """
 
-class TestConfiguration(unittest.TestCase):
+class TestConfiguration(tools.AgentTestCase):
     def test_parse_conf(self):
         config = conf.ConfigurationProvider()
         config.load(TestConf)
@@ -57,12 +57,13 @@ class TestConfiguration(unittest.TestCase):
         self.assertRaises(AgentConfigError, config.load, None)
 
     def test_load_conf_file(self):
-        with open('/tmp/test_conf', 'w') as F:
+        conf_file = os.path.join(self.tmp_dir, "waagent.conf")
+        with open(conf_file, 'w') as F:
             F.write(TestConf)
             F.close()
         
         config = conf.ConfigurationProvider()
-        conf.load_conf('/tmp/test_conf', conf=config)
+        conf.load_conf(conf_file, conf=config)
         self.assertEquals(True, config.get_switch("foo.bar.switch"), False)
 
 if __name__ == '__main__':

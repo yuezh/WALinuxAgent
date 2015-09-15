@@ -19,13 +19,13 @@
 # http://msdn.microsoft.com/en-us/library/cc227259%28PROT.13%29.aspx
 
 import tests.env
-from tests.tools import *
+from tests.tools import AgentTestCase
 import unittest
 from azurelinuxagent.utils.osutil import OSUTIL, OSUtilError
 from azurelinuxagent.handler import HANDLERS
 import azurelinuxagent.distro.default.osutil as osutil
 
-class TestDistroLoader(unittest.TestCase):
+class TestDistroLoader(AgentTestCase):
     def test_loader(self):
         self.assertNotEquals(osutil.DefaultOSUtil, type(OSUTIL))
         self.assertNotEquals(None, HANDLERS.init_handler)
