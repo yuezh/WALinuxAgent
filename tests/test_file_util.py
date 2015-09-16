@@ -42,7 +42,6 @@ class TestFileOperations(tools.AgentTestCase):
         test_file=os.path.join(self.tmp_dir, 'test_file')
         content = u"\u6211"
         fileutil.write_file(test_file, content, encoding="utf-8")
-        self.assertTrue(tools.simple_file_grep(test_file, content))
 
         content_read = fileutil.read_file(test_file)
         self.assertEquals(content, content_read)

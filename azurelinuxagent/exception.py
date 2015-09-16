@@ -63,3 +63,10 @@ class ResourceDiskError(AgentError):
     def __init__(self, msg):
         super(ResourceDiskError, self).__init__('000005', msg)
 
+class UpdateError(AgentError):
+    """
+    Update agent failed
+    """
+    def __init__(self, msg):
+        super(UpdateError, self).__init__('000006', msg)
+

@@ -650,3 +650,9 @@ class DefaultOSUtil(object):
         else:
             raise OSUtilError("Failed to get procerssor cores")
 
+    def get_update_path(self):
+        return "/usr/local/lib/waagent"
+
+    def pid_exits(self, pid):
+        return os.path.exists("/proc/{0}".format(pid))
+

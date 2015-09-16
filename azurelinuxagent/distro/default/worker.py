@@ -41,7 +41,6 @@ class WorkerHandler(object):
         self.handlers = handlers
 
     def probe_env(self):
-
         if conf.get_switch("DetectScvmmEnv", False):
             if self.handlers.scvmm_handler.detect_scvmm_env():
                 return

@@ -81,6 +81,7 @@ def worker():
     """
     Run agent worker
     """
+    HANDLERS.worker_handler.probe_env()
     HANDLERS.worker_handler.run()
 
 def deprovision(force=False, deluser=False):

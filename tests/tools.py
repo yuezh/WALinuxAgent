@@ -27,8 +27,14 @@ import tempfile
 from functools import wraps
 from azurelinuxagent.utils.osutil import OSUTIL
 
+try:
+    from unittest.mock import Mock, patch, MagicMock
+except ImportError:
+    from mock import Mock, patch, MagicMock
+
 parent = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(parent)
+
 
 def simple_file_grep(file_path, search_str):
     for line in open(file_path):
