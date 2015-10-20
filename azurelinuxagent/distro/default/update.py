@@ -96,7 +96,7 @@ class UpdateHandler(object):
             add_event("WALA", is_success=False, message=text(e))
             return []
 
-        family = conf.get("AutoUpdate.GAFamily", "PROD")
+        family = conf.get("AutoUpdate.GAFamily", "Prod")
         manifests = [manifest for manifest in manifest_list.vmAgentManifests \
                      if manifest.family == family]
         if len(manifests) == 0:
@@ -283,7 +283,7 @@ class AgentInstance(object):
         self.failure_count = 0
 
     def is_blacklisted(self):
-        return self.last_failure >= MAX_FAILURE
+        return self.failure_count >= MAX_FAILURE
 
     def is_running(self):
         return self.state == AgentInstance.Running

@@ -540,8 +540,11 @@ class WireClient(object):
             if(os.path.isfile(INCARNATION_FILE_NAME)):
                 last_incarnation = fileutil.read_file(INCARNATION_FILE_NAME)
             new_incarnation = goal_state.incarnation
+            logger.verb("Incarnation: {0} -> {1}", last_incarnation, 
+                        new_incarnation)
             if last_incarnation is not None and \
-                    last_incarnation == new_incarnation:
+                    last_incarnation <= new_incarnation:
+                logger.verb("Incarnation not changed, quit update_goal_state")
                 #Goalstate is not updated.
                 return
 
