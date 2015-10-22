@@ -41,6 +41,11 @@ class WorkerHandler(object):
         self.handlers = handlers
 
     def probe_env(self):
+        logger.info("{0} Version:{1}", AGENT_LONG_NAME, AGENT_VERSION)
+        logger.info("OS: {0} {1}", DISTRO_NAME, DISTRO_VERSION)
+        logger.info("Python: {0}.{1}.{2}", PY_VERSION_MAJOR, PY_VERSION_MINOR,
+                    PY_VERSION_MICRO)
+
         if conf.get_switch("DetectScvmmEnv", False):
             if self.handlers.scvmm_handler.detect_scvmm_env():
                 return

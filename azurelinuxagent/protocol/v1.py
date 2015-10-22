@@ -999,7 +999,7 @@ class ExtensionsConfig(object):
             manifest = VMAgentManifest()
             manifest.family = family
             for uri in uris:
-                manifestUri = VMAgentManifestUri(uri=uri)
+                manifestUri = VMAgentManifestUri(uri=gettext(uri))
                 manifest.versionsManifestUris.append(manifestUri)
             self.vmagent_manifests.vmAgentManifests.append(manifest)
 

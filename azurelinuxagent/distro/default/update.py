@@ -56,14 +56,16 @@ class UpdateHandler(object):
         self.handlers.worker_handler.probe_env()
 
         if conf.get_switch("AutoUpdate.Enabled", True):
+            logger.info("Auto update enabled")
             self.handle_update()
         else:
+            logger.info("Auto update not enabled")
             self.handlers.worker_handler.run()
 
     def handle_update(self):
+        self.instances.load_all()
         while True:
             try:
-                self.instances.load_all()
                 pkgs = self.get_available_pkgs()
                 self.instances.refresh(pkgs)
                 self.update()
@@ -156,6 +158,7 @@ class AgentInstanceList(object):
         4. Sort item by version
         """
         
+        logger.verb("Refresh agent instances list")
         #Create new instance for new version if neccesaary
         for pkg in agent_pkgs:
             item = self.get(pkg.version)
@@ -172,8 +175,6 @@ class AgentInstanceList(object):
         self.items = sorted(self.items, key=lambda item: Version(item.version),
                             reverse=True)
 
-        if not self.contains(AGENT_VERSION):
-            self.add(DefaultAgentInstance())
 
 
     def cleanup(self, agent_pkgs) :
@@ -191,6 +192,7 @@ class AgentInstanceList(object):
                 self.items.remove(item)
 
     def load_all(self):
+        logger.verb("Load agent instance data")
         instances_dir = os.path.join(OSUTIL.get_lib_dir(), AGENT_INSTANCES_DIR)
         fileutil.mkdir(instances_dir)
         for data_file in os.listdir(instances_dir):
@@ -200,8 +202,10 @@ class AgentInstanceList(object):
                 self.add(instance)
             except UpdateError as e:
                 add_event(name=u"WALA", is_success=False, message=text(e))
+        self.add(DefaultAgentInstance())
 
     def save_all(self):
+        logger.verb("Save agent instance data")
         for item in self.items:
             try:
                 item.save()
@@ -395,12 +399,22 @@ class DefaultAgentInstance(AgentInstance):
         """
         Launch default agent. No need to download
         """
+        logger.verb("Launch default agent")
         if self.state == AgentInstance.Running:
             raise UpdateError("Shouldn't start a running agent")
-
+        
         args = [sys.argv[0], "-worker"]
         self.launch_agent(args)
 
-    def cleanup(self):
+    def mark_failure(self):
+        """
+        No need to count failure for defaut version.
+        """
+        pass #Do nothing
+
+    def save(self):
+        pass #Do nothing
+
+    def load(self):
         pass #Do nothing
 
