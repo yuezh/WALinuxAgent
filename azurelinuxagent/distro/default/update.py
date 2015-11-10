@@ -32,6 +32,7 @@ import azurelinuxagent.utils.fileutil as fileutil
 import azurelinuxagent.utils.restutil as restutil
 from azurelinuxagent.utils.osutil import OSUTIL
 import azurelinuxagent.protocol as prot
+from azurelinuxagent.protocol.factory import PROT_FACTORY
 from azurelinuxagent.metadata import AGENT_VERSION
 from azurelinuxagent.utils.textutil import Version
 
@@ -92,19 +93,18 @@ class UpdateHandler(object):
 
     def get_available_pkgs(self):
         try:
-            protocol = prot.FACTORY.get_default_protocol()
+            protocol = PROT_FACTORY.get_protocol()
             manifest_list = protocol.get_vmagent_manifests()
         except prot.ProtocolError as e:
             add_event("WALA", is_success=False, message=text(e))
             return []
-
+        
         family = conf.get("AutoUpdate.GAFamily", "Prod")
         manifests = [manifest for manifest in manifest_list.vmAgentManifests \
                      if manifest.family == family]
         if len(manifests) == 0:
             logger.warn("GAFamily not found:{0}", family)
             return []
-
         try:
             pkg_list = protocol.get_vmagent_pkgs(manifests[0])
         except prot.ProtocolError as e:

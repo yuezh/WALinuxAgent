@@ -103,10 +103,11 @@ class MetadataProtocol(Protocol):
             raise ProtocolError("{0} - POST: {1}".format(resp.status, url))
     
     def _get_trans_cert(self):
-        file_name = TRANSPORT_CERT_FILE_NAME
-        if not os.path.isfile(file_name):
-            raise ProtocolError("{0} is missing.".format(file_name))
-        content = fileutil.read_file(file_name)
+        trans_crt_file = os.path.join(OSUTIL.get_lib_dir(), 
+                                      TRANSPORT_CERT_FILE_NAME)
+        if not os.path.isfile(trans_crt_file):
+            raise ProtocolError("{0} is missing.".format(trans_crt_file))
+        content = fileutil.read_file(trans_crt_file)
         return textutil.get_bytes_from_pem(content)
 
     def initialize(self):

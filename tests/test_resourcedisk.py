@@ -46,7 +46,7 @@ class TestResourceDisk(AgentTestCase):
     @mock(rdh.shellutil, 'run', MockFunc(retval=0))
     def test_mountGPT(self):
         mount_point = os.path.join(self.tmp_dir, "resource")
-        handler = rdh.ResourceDiskHandler()
+        handler = rdh.ResourceDiskHandler(None)
         handler.mount_resource_disk(mount_point, 'ext4')
 
     @mock(rdh.OSUTIL, 'device_for_ide_port', MockFunc(retval='foo'))
@@ -54,13 +54,13 @@ class TestResourceDisk(AgentTestCase):
     @mock(rdh.shellutil, 'run', MockFunc(retval=0))
     def test_mountMBR(self):
         mount_point = os.path.join(self.tmp_dir, "resource")
-        handler = rdh.ResourceDiskHandler()
+        handler = rdh.ResourceDiskHandler(None)
         handler.mount_resource_disk(mount_point, 'ext4')
 
     @mock(rdh.shellutil, 'run', MockFunc(retval=0))
     def test_createSwapSpace(self):
         mount_point = os.path.join(self.tmp_dir, "resource")
-        handler = rdh.ResourceDiskHandler()
+        handler = rdh.ResourceDiskHandler(None)
         handler.create_swap_space(mount_point, 512)
 
 if __name__ == '__main__':

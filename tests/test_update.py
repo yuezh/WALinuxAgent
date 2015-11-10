@@ -29,6 +29,7 @@ import azurelinuxagent.distro.default.update as update
 import azurelinuxagent.utils.osutil as osutil
 from azurelinuxagent.utils.osutil import OSUTIL
 import azurelinuxagent.protocol as prot
+from azurelinuxagent.protocol.factory import PROT_FACTORY
 from azurelinuxagent.metadata import AGENT_VERSION, PY_VERSION_MAJOR
 
 HANDLERS = Mock()
@@ -46,10 +47,11 @@ class TestUpdateHandler(AgentTestCase):
         update_handler.run()
         update_handler.handle_update.assert_any_call()
 
-    @patch("azurelinuxagent.protocol")
+    @patch("azurelinuxagent.protocol.v2")
+    @patch("azurelinuxagent.protocol.factory")
     def test_no_available_pkgs(self, *args):
         protocol = Mock()
-        prot.FACTORY.get_default_protocol = MagicMock(return_value=protocol)
+        PROT_FACTORY.get_protocol = MagicMock(return_value=protocol)
         manifests = prot.VMAgentManifestList()
         protocol.get_vmagent_manifests = MagicMock(return_value=manifests)
         pkgs = prot.ExtHandlerPackageList()
@@ -60,11 +62,12 @@ class TestUpdateHandler(AgentTestCase):
         self.assertEquals(0, len(pkgs))
         protocol.get_vmagent_manifests.assert_any_call()
         
-    @patch("azurelinuxagent.protocol")
+    @patch("azurelinuxagent.protocol.v2")
+    @patch("azurelinuxagent.protocol.factory")
     def test_get_available_pkgs(self, *args):
         protocol = Mock()
-        prot.FACTORY.get_default_protocol = MagicMock(return_value=protocol)
-        manifest = prot.VMAgentManifest(family="PROD")
+        PROT_FACTORY.get_protocol = MagicMock(return_value=protocol)
+        manifest = prot.VMAgentManifest(family="Prod")
         manifests = prot.VMAgentManifestList()
         manifests.vmAgentManifests.append(manifest)
         protocol.get_vmagent_manifests = MagicMock(return_value=manifests)
@@ -145,7 +148,7 @@ class TestAgentInstanceList(AgentTestCase):
 
         instances = update.AgentInstanceList()
         instances.load_all()
-        self.assertEquals(1, len(instances.items))
+        self.assertEquals(2, len(instances.items))
         self.assertEquals("1.0.0", instances.items[0].version)
 
     def test_cleanup(self):
@@ -166,12 +169,12 @@ class TestAgentInstanceList(AgentTestCase):
 
 
     def test_refresh(self):
-        instances = update.AgentInstanceList()
         now = time.time()
         old = now - 2 * update.AgentInstanceList.retain_interval
         
+        instances = update.AgentInstanceList()
         instances.add(update.AgentInstance(version="1.0.2", last_failure=now))
-        #Failure happened long agon, should be cleared
+        #Failure happened long ago, should be cleared
         instances.add(update.AgentInstance(version="1.0.1", last_failure=old))
 
         pkgs = prot.ExtHandlerPackageList()
@@ -181,14 +184,12 @@ class TestAgentInstanceList(AgentTestCase):
 
         instances.refresh(pkgs.versions)
 
-        self.assertEquals(3, len(instances.items))
+        self.assertEquals(2, len(instances.items))
         self.assertEquals("1.0.2", instances.items[0].version)
         self.assertEquals(now, instances.items[0].last_failure)
 
         self.assertEquals("1.0.1", instances.items[1].version)
         self.assertEquals(0, instances.items[1].last_failure)
-
-        self.assertEquals(AGENT_VERSION, instances.items[2].version)
 
 if __name__ == '__main__':
     unittest.main()

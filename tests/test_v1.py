@@ -96,14 +96,21 @@ class MockResp(object):
     def read(self):
         return self.data
 
+class MockDhcpResp(object):
+    def __init__(self):
+        self.endpoint='http://foobar'
+
+def mock_fetch_dhcp_resp(*args, **kwargs):
+    return MockDhcpResp()
 
 class TestWireProtocol(AgentTestCase):
     @mock(v1, '_fetch_manifest', mock_fetch_manifest)
     @mock(v1, '_fetch_cache', mock_fetch_cache)
     @mock(v1, '_fetch_uri', mock_fetch_uri)
+    @mock(v1.dhcp.DHCPCLIENT, 'fetch_dhcp_resp', mock_fetch_dhcp_resp)
     @mock(v1.fileutil, 'write_file', MockFunc())
     def test_getters(self):
-        protocol = v1.WireProtocol("http://foo.bar")
+        protocol = v1.WireProtocol()
         protocol.initialize()
         
         vminfo = protocol.get_vminfo()
