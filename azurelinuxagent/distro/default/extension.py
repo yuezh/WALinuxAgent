@@ -58,24 +58,25 @@ def validate_in_range(val, valid_range, name):
     if val not in valid_range:
         raise ExtensionError("Invalid {0}: {1}".format(name, val))
 
+def parse_formatted_message(formatted_message):
+    if formatted_message is None:
+        return None
+    validate_has_key(formatted_message, 'lang', 'formattedMessage/lang')
+    validate_has_key(formatted_message, 'message', 'formattedMessage/message')
+    return formatted_message.get('message')
+    
+
 def parse_ext_substatus(substatus):
     #Check extension sub status format
-    validate_has_key(substatus, 'name', 'substatus/name')
     validate_has_key(substatus, 'status', 'substatus/status')
-    validate_has_key(substatus, 'code', 'substatus/code')
-    validate_has_key(substatus, 'formattedMessage', 'substatus/formattedMessage')
-    validate_has_key(substatus['formattedMessage'], 'lang',
-                     'substatus/formattedMessage/lang')
-    validate_has_key(substatus['formattedMessage'], 'message',
-                     'substatus/formattedMessage/message')
-
     validate_in_range(substatus['status'], VALID_EXTENSION_STATUS,
                       'substatus/status')
     status = prot.ExtensionSubStatus()
     status.name = substatus.get('name')
     status.status = substatus.get('status')
     status.code = substatus.get('code')
-    status.message  =  substatus.get('formattedMessage').get('message')
+    formatted_message = substatus.get('formattedMessage')
+    status.message = parse_formatted_message(formatted_message)
     return status
 
 def parse_ext_status(ext_status, data):
@@ -84,18 +85,12 @@ def parse_ext_status(ext_status, data):
     #Currently, only the first status will be reported
     data = data[0]
     #Check extension status format
+    validate_has_key(data, 'status', 'version')
+    validate_has_key(data, 'status', 'timestampUTC')
     validate_has_key(data, 'status', 'status')
     status_data = data['status']
     validate_has_key(status_data, 'status', 'status/status')
-    validate_has_key(status_data, 'operation', 'status/operation')
-    validate_has_key(status_data, 'code', 'status/code')
-    validate_has_key(status_data, 'name', 'status/name')
-    validate_has_key(status_data, 'formattedMessage', 'status/formattedMessage')
-    validate_has_key(status_data['formattedMessage'], 'lang',
-                     'status/formattedMessage/lang')
-    validate_has_key(status_data['formattedMessage'], 'message',
-                     'status/formattedMessage/message')
-
+    
     validate_in_range(status_data['status'], VALID_EXTENSION_STATUS,
                       'status/status')
 
@@ -103,10 +98,9 @@ def parse_ext_status(ext_status, data):
     ext_status.configurationAppliedTime = applied_time
     ext_status.operation = status_data.get('operation')
     ext_status.status = status_data.get('status')
-
     ext_status.code = status_data.get('code')
-    ext_status.message =status_data['formattedMessage'].get('message')
-
+    formatted_message = status_data.get('formattedMessage')
+    ext_status.message = parse_formatted_message(formatted_message)
     substatus_list = status_data.get('substatus')
     if substatus_list is None:
         return
